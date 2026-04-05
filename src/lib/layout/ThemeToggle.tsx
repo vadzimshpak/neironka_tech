@@ -103,7 +103,7 @@ export function ThemeToggle() {
       onClick={toggle}
       disabled={!ready}
       aria-label={isDark ? "Включить светлую тему" : "Включить тёмную тему"}
-      aria-pressed={isDark}
+      aria-pressed={isDark ? true : undefined}
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </button>

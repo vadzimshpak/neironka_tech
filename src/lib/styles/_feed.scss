@@ -1,6 +1,52 @@
 @use "variables" as *;
 @use "mixins" as *;
 
+.home-text-ai {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  
+  @include from-sm {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.home-text-ai__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: $color-accent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.35;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    border-color: $color-accent;
+    background: rgba($color-accent, 0.08);
+    color: $color-accent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
 .feed {
   width: 100%;
 }

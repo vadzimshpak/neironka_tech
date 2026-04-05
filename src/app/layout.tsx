@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { YandexMetrika } from "@/lib/analytics/YandexMetrika";
 import { ThemeScript } from "@/lib/layout/ThemeScript";
+import { SITE_WIDE_SEO_KEYWORDS } from "@/lib/seo-keywords";
 import "./globals.scss";
 
 const geistSans = Geist({
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Статьи и материалы о нейросетях, машинном обучении и практическом применении ИИ.",
+  keywords: SITE_WIDE_SEO_KEYWORDS,
 };
 
 export default function RootLayout({

@@ -24,8 +24,12 @@
 | `DATABASE_URL` | да | URL SQLite, например `file:./prisma/dev.db` |
 | `ADMIN_HASH` | для админки | Секретная строка; в cookie `admin_access` должно быть **то же значение** |
 | `NEXT_PUBLIC_SITE_URL` | нет | Канонический URL сайта (sitemap, Open Graph, метаданные). Без завершающего `/` |
+| `OPENROUTER_API_KEY` | для `/chat` | Ключ [OpenRouter](https://openrouter.ai/) (только сервер, не `NEXT_PUBLIC_`) |
+| `OPENROUTER_MODEL` | для `/chat` | ID модели, например `openai/gpt-4o-mini` или `anthropic/claude-3.5-haiku` |
 
 Без `ADMIN_HASH` маршруты `/admin/*`, `/posts/new` и `/api/admin/*` отвечают **404**.
+
+Без `OPENROUTER_*` страница `/chat` открывается, но API `/api/chat` вернёт **503**.
 
 ## Установка и запуск
 

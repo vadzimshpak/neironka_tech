@@ -16,6 +16,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 1,
   };
 
+  const chat: MetadataRoute.Sitemap[number] = {
+    url: `${base}/chat`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  };
+
   const rows = await prisma.feedArticle.findMany({
     select: { slug: true, publishedAt: true },
   });
@@ -27,5 +34,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [home, ...posts];
+  return [home, chat, ...posts];
 }

@@ -25,6 +25,11 @@ export function Header() {
                   Посты
                 </Link>
               </li>
+              <li className="site-header__item">
+                <Link className="site-header__link" href="/chat">
+                  Чат
+                </Link>
+              </li>
             </ul>
           </nav>
           <a
