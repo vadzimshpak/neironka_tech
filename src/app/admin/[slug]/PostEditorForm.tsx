@@ -254,7 +254,9 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
       </label>
 
       <div className="admin-editor__field">
-        <span className="admin-editor__label">Текст поста</span>
+        <label className="admin-editor__label" htmlFor="post-body-html">
+          Текст поста (HTML)
+        </label>
         <PostBodyRichEditor
           key={urlSlug}
           initialBody={post.body}

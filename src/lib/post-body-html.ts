@@ -2,7 +2,7 @@ import DOMPurify from "isomorphic-dompurify";
 
 /**
  * Старый текст без тегов превращаем в HTML для редактора.
- * Уже HTML (сохранённый TipTap) возвращаем как есть.
+ * Уже HTML (из админки) возвращаем как есть.
  */
 export function bodyToEditorHtml(raw: string): string {
   const t = (raw ?? "").trim();
@@ -28,7 +28,26 @@ export function bodyToEditorHtml(raw: string): string {
   return parts.map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 }
 
-/** HTML для публикации: санитизация (контент из админки). */
+/**
+ * Значение для поля «сырой HTML» в админке: пусто → пустая строка;
+ * уже разметка → как в БД; иначе старый текст без тегов → как в bodyToEditorHtml.
+ */
+export function postBodyToTextareaValue(raw: string): string {
+  const t = (raw ?? "").trim();
+  if (!t) {
+    return "";
+  }
+  if (t.startsWith("<")) {
+    return raw;
+  }
+  return bodyToEditorHtml(raw);
+}
+
+/**
+ * HTML для публикации: санитизация (контент из админки).
+ * Атрибут `class` сохраняется — в постах можно использовать Tailwind
+ * (см. `src/app/tailwind.css` и `src/lib/post-body-tailwind-registry.html`).
+ */
 export function sanitizePostBodyHtml(body: string): string {
   const t = (body ?? "").trim();
   if (!t) {

@@ -345,158 +345,30 @@
   background: var(--background);
 }
 
-.post-body-editor--loading {
-  min-height: 12rem;
-}
-
-.post-body-editor__shell {
-  min-height: 12rem;
-  animation: post-body-editor-pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes post-body-editor-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 0.2;
-  }
-}
-
-.post-body-editor__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.45rem 0.5rem;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--background);
-}
-
-.post-body-editor__toolbar-sep {
-  align-self: stretch;
-  width: 1px;
-  margin: 0 0.2rem;
-  background: var(--color-border);
-}
-
-.post-body-editor__tool {
+.post-body-editor__textarea {
   box-sizing: border-box;
-  min-width: 2rem;
-  padding: 0.35rem 0.45rem;
-  border: 1px solid transparent;
-  border-radius: 0.35rem;
-  background: transparent;
+  display: block;
+  width: 100%;
+  min-height: 14rem;
+  max-height: 32rem;
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--background);
   color: var(--color-text);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
-  font-weight: 600;
-  font-family: inherit;
-  line-height: 1.2;
-  cursor: pointer;
-  transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease;
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
 
-  &:hover:not(:disabled) {
-    background: var(--color-border);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
+  &::placeholder {
+    color: var(--color-text-muted);
   }
 
   &:focus-visible {
     outline: 2px solid $color-accent;
-    outline-offset: 1px;
-  }
-}
-
-.post-body-editor__tool--active {
-  border-color: $color-accent;
-  background: rgba($color-accent, 0.12);
-  color: $color-accent;
-}
-
-.post-body-editor__content .ProseMirror.post-body-editor__prose {
-  min-height: 14rem;
-  max-height: 32rem;
-  overflow-y: auto;
-  padding: 0.55rem 0.65rem;
-  font-size: 0.9375rem;
-  line-height: 1.55;
-  color: var(--color-text);
-  outline: none;
-
-  &:focus-visible {
-    outline: none;
-  }
-
-  p {
-    margin: 0 0 0.65rem;
-  }
-
-  p:last-child {
-    margin-bottom: 0;
-  }
-
-  h2,
-  h3 {
-    margin: 0.85rem 0 0.5rem;
-    line-height: 1.25;
-    color: var(--color-text);
-  }
-
-  h2 {
-    font-size: 1.15rem;
-  }
-
-  h3 {
-    font-size: 1.05rem;
-  }
-
-  ul,
-  ol {
-    margin: 0 0 0.65rem;
-    padding-left: 1.35rem;
-  }
-
-  blockquote {
-    margin: 0 0 0.65rem;
-    padding-left: 0.85rem;
-    border-left: 3px solid var(--color-border);
-    color: var(--color-text-muted);
-  }
-
-  pre {
-    margin: 0 0 0.65rem;
-    padding: 0.5rem 0.65rem;
-    overflow-x: auto;
-    border-radius: 0.35rem;
-    background: var(--color-border);
-    font-size: 0.8125rem;
-  }
-
-  code {
-    padding: 0.1em 0.3em;
-    border-radius: 0.25rem;
-    background: var(--color-border);
-    font-size: 0.875em;
-  }
-
-  pre code {
-    padding: 0;
-    background: none;
-    font-size: inherit;
-  }
-
-  p.is-editor-empty:first-child::before {
-    content: attr(data-placeholder);
-    float: left;
-    height: 0;
-    color: var(--color-text-muted);
-    pointer-events: none;
+    outline-offset: -2px;
   }
 }

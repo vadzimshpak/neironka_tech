@@ -5,6 +5,7 @@ import { YandexMetrika } from "@/lib/analytics/YandexMetrika";
 import { ThemeScript } from "@/lib/layout/ThemeScript";
 import { SITE_WIDE_SEO_KEYWORDS } from "@/lib/seo-keywords";
 import "./globals.scss";
+import "./tailwind.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
