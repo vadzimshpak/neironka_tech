@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { SiteLayout } from "@/lib/layout";
-import { getPostBySlug } from "@/lib/post-db";
+import { getArticleBodyImageIds, getPostBySlug } from "@/lib/post-db";
 
 import { PostEditorForm } from "./PostEditorForm";
 
@@ -32,6 +32,8 @@ export default async function AdminPostEditorPage({ params }: Props) {
     notFound();
   }
 
+  const bodyImageIds = await getArticleBodyImageIds(post.id);
+
   return (
     <SiteLayout>
       <div className="admin-editor-page">
@@ -50,6 +52,7 @@ export default async function AdminPostEditorPage({ params }: Props) {
             coverImageAlt: post.coverImageAlt,
             hasCover: Boolean(post.coverImage && post.coverImage.length > 0),
             showCoverOnHome: post.showCoverOnHome,
+            bodyImageIds,
           }}
         />
       </div>

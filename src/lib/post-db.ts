@@ -8,6 +8,15 @@ export async function getPostBySlug(slug: string) {
   });
 }
 
+export async function getArticleBodyImageIds(articleId: string) {
+  const rows = await prisma.articleBodyImage.findMany({
+    where: { articleId },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.map((r) => r.id);
+}
+
 export async function getAllPostSlugs() {
   return prisma.feedArticle.findMany({
     select: { slug: true },

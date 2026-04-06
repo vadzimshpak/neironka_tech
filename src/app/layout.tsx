@@ -41,7 +41,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className="app-root__body">
+      <body className="app-root__body" suppressHydrationWarning>
         {children}
         <YandexMetrika />
       </body>

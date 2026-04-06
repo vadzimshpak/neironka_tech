@@ -23,5 +23,20 @@ model FeedArticle {
   /// Показывать обложку в ленте на главной
   showCoverOnHome Boolean @default(false)
 
+  bodyImages ArticleBodyImage[]
+
   @@map("feed_articles")
+}
+
+/// Иллюстрации к телу поста (для вставки в HTML по URL), хранятся как blob
+model ArticleBodyImage {
+  id        String   @id
+  articleId String
+  article   FeedArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
+  @@map("article_body_images")
 }

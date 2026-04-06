@@ -2,11 +2,37 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  MAX_ARTICLE_BODY_IMAGE_BYTES,
+  MAX_ARTICLE_BODY_IMAGES_PER_POST,
+} from "@/lib/article-body-image-limits";
 
 import { PostBodyRichEditor } from "./PostBodyRichEditor";
 
 const MAX_COVER_FILE_BYTES = 5 * 1024 * 1024;
+
+type BodyImageItem = { id: string; path: string };
+
+function bodyImagePublicPath(articleId: string, imageId: string): string {
+  return `/api/articles/${articleId}/body-images/${imageId}`;
+}
+
+/** До отправки на сервер: часто пустой MIME или image/jpg — сервер проверяет по сигнатуре. */
+function isClientAllowedImageFile(file: File): boolean {
+  const t = file.type.toLowerCase().split(";")[0].trim();
+  if (
+    t &&
+    /^image\/(jpe?g|pjpeg|png|webp|x-png)$/i.test(t)
+  ) {
+    return true;
+  }
+  if ((!t || t === "application/octet-stream") && /\.(jpe?g|png|webp)$/i.test(file.name)) {
+    return true;
+  }
+  return false;
+}
 
 type CoverDraft =
   | { kind: "unchanged" }
@@ -34,6 +60,7 @@ export type PostEditorInitial = {
   coverImageAlt: string | null;
   hasCover: boolean;
   showCoverOnHome: boolean;
+  bodyImageIds: string[];
 };
 
 function toDatetimeLocalValue(iso: string): string {
@@ -64,6 +91,20 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
     "idle" | "saving" | "saved" | "error" | "deleting"
   >("idle");
   const [message, setMessage] = useState("");
+  const [bodyImages, setBodyImages] = useState<BodyImageItem[]>(() =>
+    post.bodyImageIds.map((id) => ({
+      id,
+      path: bodyImagePublicPath(post.id, id),
+    })),
+  );
+  const [urlOrigin, setUrlOrigin] = useState("");
+  /** file input только после mount — совпадает SSR и гидратация (кэш/HMR, расширения). */
+  const [bodyImagesPickerMounted, setBodyImagesPickerMounted] = useState(false);
+
+  useEffect(() => {
+    setUrlOrigin(window.location.origin);
+    setBodyImagesPickerMounted(true);
+  }, []);
 
   const showCoverAlt =
     coverDraft.kind === "replace" ||
@@ -103,6 +144,90 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
       setStatus("error");
       setMessage("Не удалось прочитать файл");
     }
+  }
+
+  async function onBodyImagesFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const list = e.target.files ? Array.from(e.target.files) : [];
+    e.target.value = "";
+    if (list.length === 0) {
+      return;
+    }
+    if (bodyImages.length + list.length > MAX_ARTICLE_BODY_IMAGES_PER_POST) {
+      setStatus("error");
+      setMessage(
+        `Не больше ${MAX_ARTICLE_BODY_IMAGES_PER_POST} изображений на пост`,
+      );
+      return;
+    }
+    for (const file of list) {
+      if (file.size > MAX_ARTICLE_BODY_IMAGE_BYTES) {
+        setStatus("error");
+        setMessage(`«${file.name}» больше 5 МБ`);
+        return;
+      }
+      if (!isClientAllowedImageFile(file)) {
+        setStatus("error");
+        setMessage(
+          `«${file.name}»: нужен JPEG, PNG или WebP (или пустой тип — тогда расширение .jpg/.jpeg/.png/.webp)`,
+        );
+        return;
+      }
+    }
+    setMessage("");
+    setStatus("idle");
+    let nextCount = bodyImages.length;
+    for (const file of list) {
+      if (nextCount >= MAX_ARTICLE_BODY_IMAGES_PER_POST) {
+        break;
+      }
+      const fd = new FormData();
+      fd.append("file", file);
+      try {
+        const res = await fetch(
+          `/api/admin/posts/${encodeURIComponent(urlSlug)}/body-images`,
+          { method: "POST", body: fd, credentials: "same-origin" },
+        );
+        const payload = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          id?: string;
+          url?: string;
+        };
+        if (!res.ok) {
+          setStatus("error");
+          setMessage(payload.error ?? "Ошибка загрузки изображения");
+          return;
+        }
+        const newId = payload.id;
+        const newUrl = payload.url;
+        if (newId && newUrl) {
+          setBodyImages((prev) => [
+            ...prev,
+            { id: newId, path: newUrl },
+          ]);
+          nextCount += 1;
+        }
+      } catch {
+        setStatus("error");
+        setMessage("Сеть недоступна при загрузке изображения");
+        return;
+      }
+    }
+  }
+
+  async function onRemoveBodyImage(imageId: string) {
+    const res = await fetch(
+      `/api/admin/posts/${encodeURIComponent(urlSlug)}/body-images/${encodeURIComponent(imageId)}`,
+      { method: "DELETE", credentials: "same-origin" },
+    );
+    const payload = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setStatus("error");
+      setMessage(payload.error ?? "Не удалось удалить изображение");
+      return;
+    }
+    setBodyImages((prev) => prev.filter((x) => x.id !== imageId));
+    setMessage("");
+    setStatus("idle");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -364,6 +489,93 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
           />
         </label>
       ) : null}
+
+      <div className="admin-editor__field">
+        <span className="admin-editor__label">Картинки для HTML</span>
+        <p className="admin-editor__body-images-lead">
+          Загрузите одно или несколько изображений — под превью появится ссылка для
+          вставки в текст поста (<code className="admin-editor__inline-code">
+            &lt;img src=&quot;…&quot;&gt;
+          </code>
+          ).
+        </p>
+        <div className="admin-editor__cover-actions">
+          {bodyImagesPickerMounted ? (
+            <label className="admin-editor__cover-file-label">
+              <input
+                className="admin-editor__cover-file-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                disabled={
+                  busy || bodyImages.length >= MAX_ARTICLE_BODY_IMAGES_PER_POST
+                }
+                onChange={onBodyImagesFileChange}
+              />
+              <span className="admin-editor__cover-file-btn">
+                {bodyImages.length >= MAX_ARTICLE_BODY_IMAGES_PER_POST
+                  ? "Лимит изображений"
+                  : bodyImages.length > 0
+                    ? "Добавить ещё"
+                    : "Загрузить изображения"}
+              </span>
+            </label>
+          ) : (
+            <span
+              className="admin-editor__cover-file-btn admin-editor__body-images-picker-placeholder"
+              aria-hidden="true"
+            >
+              {bodyImages.length >= MAX_ARTICLE_BODY_IMAGES_PER_POST
+                ? "Лимит изображений"
+                : bodyImages.length > 0
+                  ? "Добавить ещё"
+                  : "Загрузить изображения"}
+            </span>
+          )}
+        </div>
+        <p className="admin-editor__cover-hint">
+          JPEG, PNG или WebP, до 5 МБ каждое, не больше{" "}
+          {MAX_ARTICLE_BODY_IMAGES_PER_POST} файлов.
+        </p>
+        {bodyImages.length > 0 ? (
+          <ul
+            className="admin-editor__body-images-list"
+            aria-label="Загруженные иллюстрации"
+          >
+            {bodyImages.map((item) => {
+              const href =
+                urlOrigin !== "" ? `${urlOrigin}${item.path}` : item.path;
+              return (
+                <li key={item.id} className="admin-editor__body-images-item">
+                  <img
+                    className="admin-editor__body-images-thumb"
+                    src={item.path}
+                    alt=""
+                  />
+                  <div className="admin-editor__body-images-item-body">
+                    <a
+                      className="admin-editor__body-images-link"
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {href}
+                    </a>
+                    <button
+                      className="admin-editor__body-images-remove"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void onRemoveBodyImage(item.id)}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </div>
 
       <label className="admin-editor__field admin-editor__field--checkbox">
         <input
