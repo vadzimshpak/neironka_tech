@@ -22,6 +22,8 @@ model FeedArticle {
   coverImageAlt String?
   /// Показывать обложку в ленте на главной
   showCoverOnHome Boolean @default(false)
+  /// Опубликован на сайте; false — черновик (скрыт с ленты и из списка постов)
+  active            Boolean  @default(true)
 
   bodyImages ArticleBodyImage[]
 

@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
 
   const rows = await prisma.feedArticle.findMany({
+    where: { active: true },
     select: { slug: true, publishedAt: true },
   });
 

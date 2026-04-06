@@ -52,6 +52,7 @@ export default async function AdminPostEditorPage({ params }: Props) {
             coverImageAlt: post.coverImageAlt,
             hasCover: Boolean(post.coverImage && post.coverImage.length > 0),
             showCoverOnHome: post.showCoverOnHome,
+            active: post.active,
             bodyImageIds,
           }}
         />

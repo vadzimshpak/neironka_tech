@@ -38,6 +38,7 @@ async function main() {
         coverImage,
         coverImageAlt,
         showCoverOnHome,
+        active: true,
       },
       update: {
         slug: article.slug,
@@ -50,6 +51,7 @@ async function main() {
         coverImage,
         coverImageAlt,
         showCoverOnHome,
+        active: true,
       },
     });
   }

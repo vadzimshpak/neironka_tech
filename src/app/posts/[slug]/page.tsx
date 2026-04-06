@@ -32,6 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) {
     return { title: "Пост не найден" };
   }
+  const isAdmin = await hasAdminAccess();
+  if (!post.active && !isAdmin) {
+    return { title: "Пост не найден" };
+  }
   const base = getSiteUrl();
   return {
     title: post.title,
@@ -54,10 +58,14 @@ export default async function PostPage({ params }: Props) {
     notFound();
   }
 
+  const canEditInAdmin = await hasAdminAccess();
+  if (!post.active && !canEditInAdmin) {
+    notFound();
+  }
+
   const hasCover =
     post.coverImage && post.coverImage.length > 0 && post.coverImageAlt;
   const bodyHtml = sanitizePostBodyHtml(post.body);
-  const canEditInAdmin = await hasAdminAccess();
 
   return (
     <SiteLayout>

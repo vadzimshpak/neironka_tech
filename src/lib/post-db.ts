@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 
 export const POSTS_INDEX_PAGE_SIZE = 10;
 
+const publishedWhere = { active: true } as const;
+
 export async function getPostBySlug(slug: string) {
   return prisma.feedArticle.findUnique({
     where: { slug },
@@ -19,6 +21,7 @@ export async function getArticleBodyImageIds(articleId: string) {
 
 export async function getAllPostSlugs() {
   return prisma.feedArticle.findMany({
+    where: publishedWhere,
     select: { slug: true },
     orderBy: { publishedAt: "desc" },
   });
@@ -26,6 +29,7 @@ export async function getAllPostSlugs() {
 
 export async function getPostsIndex() {
   return prisma.feedArticle.findMany({
+    where: publishedWhere,
     orderBy: { publishedAt: "desc" },
     select: {
       id: true,
@@ -47,11 +51,12 @@ export type PostsIndexPageResult = {
 
 export async function getPostsIndexPage(requestedPage: number): Promise<PostsIndexPageResult> {
   const pageSize = POSTS_INDEX_PAGE_SIZE;
-  const total = await prisma.feedArticle.count();
+  const total = await prisma.feedArticle.count({ where: publishedWhere });
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(Math.max(1, requestedPage), totalPages);
 
   const posts = await prisma.feedArticle.findMany({
+    where: publishedWhere,
     orderBy: { publishedAt: "desc" },
     skip: (page - 1) * pageSize,
     take: pageSize,

@@ -60,6 +60,8 @@ export type PostEditorInitial = {
   coverImageAlt: string | null;
   hasCover: boolean;
   showCoverOnHome: boolean;
+  /** false — черновик, не показывается на сайте (кроме предпросмотра админом) */
+  active: boolean;
   bodyImageIds: string[];
 };
 
@@ -87,6 +89,7 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
   const [coverDraft, setCoverDraft] = useState<CoverDraft>({ kind: "unchanged" });
   const [coverPreviewNonce, setCoverPreviewNonce] = useState(0);
   const [showCoverOnHome, setShowCoverOnHome] = useState(post.showCoverOnHome);
+  const [active, setActive] = useState(post.active);
   const [status, setStatus] = useState<
     "idle" | "saving" | "saved" | "error" | "deleting"
   >("idle");
@@ -272,6 +275,7 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
     }
 
     patchBody.showCoverOnHome = showCoverOnHome;
+    patchBody.active = active;
 
     const res = await fetch(`/api/admin/posts/${encodeURIComponent(urlSlug)}`, {
       method: "PATCH",
@@ -591,6 +595,17 @@ export function PostEditorForm({ post }: PostEditorFormProps) {
         <span className="admin-editor__checkbox-label">
           Показывать обложку в ленте на главной
         </span>
+      </label>
+
+      <label className="admin-editor__field admin-editor__field--checkbox">
+        <input
+          className="admin-editor__checkbox"
+          type="checkbox"
+          checked={!active}
+          onChange={(e) => setActive(!e.target.checked)}
+          disabled={busy}
+        />
+        <span className="admin-editor__checkbox-label">Черновик</span>
       </label>
 
       <div className="admin-editor__danger">

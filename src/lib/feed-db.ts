@@ -12,6 +12,7 @@ export type FeedArticleView = {
 
 export async function getFeedArticlesFromDb(): Promise<FeedArticleView[]> {
   const rows = await prisma.feedArticle.findMany({
+    where: { active: true },
     orderBy: { publishedAt: "desc" },
   });
 

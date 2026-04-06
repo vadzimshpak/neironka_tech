@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       gridCol: 1,
       gridRow: 1,
       showCoverOnHome: false,
+      active: false,
     },
   });
 

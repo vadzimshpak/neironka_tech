@@ -43,6 +43,8 @@ type PatchBody = {
   /** data:image/...;base64,... или `null`, чтобы удалить обложку */
   coverImageDataUrl?: string | null;
   showCoverOnHome?: boolean;
+  /** true — на сайте, false — черновик */
+  active?: boolean;
 };
 
 function parseGrid(n: unknown): 1 | 2 | undefined {
@@ -119,6 +121,11 @@ export async function PATCH(
     showCoverOnHome = body.showCoverOnHome;
   }
 
+  let active = existing.active;
+  if (typeof body.active === "boolean") {
+    active = body.active;
+  }
+
   if (body.coverImageDataUrl === null) {
     coverImage = null;
     coverImageAlt = null;
@@ -150,6 +157,7 @@ export async function PATCH(
     coverImage,
     coverImageAlt,
     showCoverOnHome,
+    active,
   };
 
   const updated = await prisma.feedArticle.update({
